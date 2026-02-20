@@ -1,0 +1,24 @@
+{
+  "name": "skills-swap-alex_baker-unit8",
+  "version": "1.0.0",
+  "description": "A platform for users to exchange skills and knowledge.\r Technologies: HTML, CSS, JavaScript.",
+  "main": "script.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alexbaker10/skills-swap-Alex_Baker-unit8.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Alexbaker10/skills-swap-Alex_Baker-unit8/issues"
+  },
+  "homepage": "https://github.com/Alexbaker10/skills-swap-Alex_Baker-unit8#readme",
+  "devDependencies": {
+    "jest": "^30.2.0"
+  }
+}
