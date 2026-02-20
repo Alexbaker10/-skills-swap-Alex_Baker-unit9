@@ -1,13 +1,5 @@
 const { filterSkillsByCategory, calculateTotalCost, matchSkillsToUser } = require('./skillswap-functions');
-const allSkills = [
-  { title: "Python Tutoring", category: "Programming", price: 20 },
-  { title: "Guitar Lessons",   category: "Music",       price: 15 },
-  { title: "Resume Review",    category: "Career",      price: 0  },
-  { title: "Web Development",  category: "Programming", price: 25 },
-  { title: "Drum Basics",      category: "Music",       price: 18 },
-  { title: "LinkedIn Profile", category: "Career",      price: 0  },
-];
-
+let allSkills = [];
 const skillsContainer = document.getElementById("skills-container");
 const filterButtons    = document.querySelectorAll("#filters button");
 const calcBtn          = document.getElementById("calc-btn");
@@ -26,11 +18,11 @@ function renderSkills(skillsArray) {
   skillsArray.forEach(skill => {
     const card = document.createElement("div");
     card.className = "card";
-
     card.innerHTML = `
       <h3>${skill.title}</h3>
       <p>Category: ${skill.category}</p>
       <p>Price: $${skill.price} ${skill.price === 0 ? "(Free / Swap)" : "per hour"}</p>
+      ${skill.description ? `<p><em>${skill.description}</em></p>` : ''}
     `;
     card.addEventListener("click", () => {
       alert(`More details for ${skill.title} coming soon!`);
@@ -39,23 +31,22 @@ function renderSkills(skillsArray) {
     skillsContainer.appendChild(card);
   });
 }
+
 function handleFilterClick(e) {
   filterButtons.forEach(btn => btn.classList.remove("active"));
   e.target.classList.add("active");
-
   const category = e.target.dataset.category;
   const filtered = filterSkillsByCategory(allSkills, category);
   renderSkills(filtered);
 }
+
 filterButtons.forEach(btn => {
   btn.addEventListener("click", handleFilterClick);
 });
 
-document.querySelector('#filters button[data-category="All"]').click();
 calcBtn.addEventListener("click", () => {
   const rate  = Number(document.getElementById("rate").value)  || 0;
   const hours = Number(document.getElementById("hours").value) || 0;
-
   const total = calculateTotalCost(rate, hours);
   totalEl.textContent = total === 0 ? "Free" : `$${total.toFixed(2)}`;
 });
@@ -63,10 +54,8 @@ calcBtn.addEventListener("click", () => {
 matchBtn.addEventListener("click", () => {
   const category = document.getElementById("match-category").value;
   const maxPrice = Number(document.getElementById("max-price").value) || Infinity;
-
   const userNeeds = { category, maxPrice };
   const matches   = matchSkillsToUser(userNeeds, allSkills);
-
   matchResults.innerHTML = "";
 
   if (matches.length === 0) {
@@ -82,4 +71,40 @@ matchBtn.addEventListener("click", () => {
     `;
     matchResults.appendChild(card);
   });
+});
+
+async function loadAndDisplaySkills() {
+    try {
+        allSkills = await window.apiService.fetchSkills();
+        renderSkills(allSkills);
+        filterButtons.forEach(btn => btn.classList.remove("active"));
+        document.querySelector('#filters button[data-category="All"]').classList.add("active");
+
+    } catch (error) {
+        console.error("Failed to load skills to the UI:", error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadAndDisplaySkills();
+    const addSkillForm = document.getElementById('add-skill-form');
+    if (addSkillForm) {
+        addSkillForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const newSkillData = {
+                title: document.getElementById('skill-title').value,
+                category: document.getElementById('skill-category').value,
+                price: parseFloat(document.getElementById('skill-price').value),
+                description: document.getElementById('skill-description').value
+            };
+
+            try {
+                await window.apiService.createSkill(newSkillData);
+                event.target.reset();
+                await loadAndDisplaySkills();
+            } catch (error) {
+                console.error("Failed to add new skill:", error);
+            }
+        });
+    }
 });
